@@ -1,0 +1,34 @@
+--- schema.py	2010-09-01 16:50:52.000000000 +0000
++++ /usr/local/lib/python2.7/dist-packages/suds-0.4-py2.7.egg/suds/xsd/schema.py	2011-09-13 16:20:45.924081494 +0000
+@@ -37,6 +37,9 @@
+ 
+ log = getLogger(__name__)
+ 
++PROCESSED_IMPORTS = []
++PROCESSED_IMPORT_DEPTH = []
++MAX_IMPORT_DEPTH = 3
+ 
+ class SchemaCollection:
+     """
+@@ -394,6 +397,21 @@
+         @rtype: L{Schema}
+         @note: This is only used by Import children.
+         """
++
++        global PROCESSED_IMPORTS, PROCESSED_IMPORT_DEPTH, MAX_IMPORT_DEPTH
++        if baseurl in PROCESSED_IMPORTS:
++            ind = PROCESSED_IMPORTS.index(baseurl)
++            if (PROCESSED_IMPORT_DEPTH[ind] < MAX_IMPORT_DEPTH):
++                PROCESSED_IMPORT_DEPTH[ind]+=1
++                log.debug('Increasing import count for: {0}'.format(baseurl))
++            else:
++                log.debug('Skipping processed import: {0}'.format(baseurl))
++                return None
++        else:
++            PROCESSED_IMPORTS.append(baseurl)
++            log.debug('Appending new import: {0}'.format(baseurl))
++            PROCESSED_IMPORT_DEPTH.append(1)
++
+         return Schema(root, baseurl, options)
+ 
+     def str(self, indent=0):
